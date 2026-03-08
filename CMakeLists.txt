@@ -20,7 +20,13 @@ FetchContent_MakeAvailable(raylib)
 set(SOURCES
     src/main.cpp
     src/game.cpp
-    src/game.hpp
+    src/snake.cpp
+    src/utilities/utilities.cpp
+    src/states/game_state.cpp
+    src/states/main_menu_state.cpp
+    src/states/playing_state.cpp
+    src/states/pause_menu_state.cpp
+    src/states/game_over_state.cpp
     src/app.rc
 )
 
