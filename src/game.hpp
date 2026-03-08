@@ -12,6 +12,57 @@ struct bodyPart;
 struct CollisionObject;
 class Snake;
 class GameState;
+class Game;
+
+class GameState {
+    public:
+        virtual ~GameState() {}
+
+        enum class StateRequest {
+            none,
+            popMe,
+            pushMainMenu,
+            pushPauseMenu,
+            pushPlaying,
+            pushGameOver,
+            clearAndPushMainMenu
+        };
+
+        double timeCreated = GetTime();
+
+        virtual GameState::StateRequest getInput(Snake& snake) = 0;
+        virtual GameState::StateRequest update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) = 0;
+        virtual void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) = 0;
+
+        
+};
+class MainMenuState : public GameState {
+    public:
+        GameState::StateRequest getInput(Snake& snake) override;
+        GameState::StateRequest update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+};
+
+class PlayingState : public GameState {
+    public:
+        GameState::StateRequest getInput(Snake& snake) override;
+        GameState::StateRequest update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+};
+
+class GameOverState : public GameState {
+    public:
+        GameState::StateRequest getInput(Snake& snake) override;
+        GameState::StateRequest update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+};
+
+class PauseMenuState : public GameState {
+    public:
+        GameState::StateRequest getInput(Snake& snake) override;
+        GameState::StateRequest update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
+};
 
 class DebugInfo{
     public:
@@ -52,22 +103,20 @@ class Game{
 
         void init(int WINDOW_WIDTH, int WINDOW_HEIGHT);
         void play();
-        //void update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
-        //void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
-        //void getInput(Snake& snake);
         void headPosOverflow(Snake& snake); 
         void recalcTiles(Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
         void calculateSquareDimensions(int& squareSize, int& offsetX, int& offsetY);
+        void processRequest(GameState::StateRequest request);
+        void globalUpdate(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
+
         bool isAdjacent(const Vector2& pos1, const Vector2& pos2);
-        
         bool handleCollisions(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
 
         Vector2 getMaxSquareSize();
+
         int getScore() const { return snake.m_length; }
 
-        
-        //std::unique_ptr<GameState> currentState;
-        //vector of state stacks
+
         std::vector<std::unique_ptr<GameState>> stateStack;
 
         Snake snake;
@@ -119,7 +168,7 @@ struct CollisionObject
 
     
     bool isColliding(const Vector2& otherPos) const {
-        return (int)position.x == (int)otherPos.x && (int)position.y == (int)otherPos.y;
+        return (int)this->position.x == (int)otherPos.x && (int)this->position.y == (int)otherPos.y;
     }
 };
 class Tile{
@@ -132,34 +181,3 @@ class Tile{
 };
 
 
-
-class GameState {
-    public:
-        virtual ~GameState() {}
-
-        virtual void getInput(Snake& snake) = 0;
-        virtual void update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) = 0;
-        virtual void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) = 0;
-};
-
-
-class MainMenuState : public GameState {
-    public:
-        void getInput(Snake& snake) override;
-        void update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-};
-
-class PlayingState : public GameState {
-    public:
-        void getInput(Snake& snake) override;
-        void update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-};
-
-class GameOverState : public GameState {
-    public:
-        void getInput(Snake& snake) override;
-        void update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-        void draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) override;
-};

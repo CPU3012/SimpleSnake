@@ -11,13 +11,23 @@
 
 #include <iostream>
 
-#define PRINT_DEBUG_INFO
+//#define PRINT_DEBUG_INFO
 
 #ifdef PRINT_DEBUG_INFO
     DebugInfo debug;
+    
+#else
+  
 #endif
 
+
 std::string DebugInfo::getSnakeReport(Snake& snake){
+    static double lastReportTime = 0.0;
+    if (GetTime() - lastReportTime < 1) {
+        return ""; 
+    }
+    lastReportTime = GetTime();
+
     return  
         "Current Direction of Travel: " + std::to_string(snake.m_currentDirectionofTravel) +
         " Direction: " + std::to_string(snake.m_direction) +
@@ -74,7 +84,6 @@ void Game::play() {
     calculateSquareDimensions(m_squareSize, m_offsetX, m_offsetY);
     recalcTiles(tiles);
 
-    // Initialize body parts
     bodyParts.clear();
 
 
@@ -93,27 +102,31 @@ void Game::play() {
 
     // ------------------------------------------------------------------------- Main game loop -----------------------------------------------------------------
     while (!WindowShouldClose()) {
+        // Update global game properties that states may need
+        globalUpdate(snake, tiles);
 
         // Get input and update the top state
-        stateStack.front()->getInput(snake);
-        stateStack.front()->update(snake, tiles, *this);
+        GameState::StateRequest request = stateStack.front()->getInput(snake);
+
+        if (request == GameState::StateRequest::none) request = stateStack.front()->update(snake, tiles, *this);
+
+        processRequest(request);
 
         // Iterate through all states and draw them, drawing the bottom states first and the top states last so that they render on top of each other correctly
+        BeginDrawing();
         for (auto state = stateStack.rbegin(); state != stateStack.rend(); ++state) {
             (*state)->draw(snake, tiles, *this);
         }
+        EndDrawing();
 
     }
 
     
 }
 
-void PlayingState::update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) {
+GameState::StateRequest PlayingState::update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) {
 
     double frameTime = GetFrameTime();
-    game.m_screenWidth = GetScreenWidth();
-    game.m_screenHeight = GetScreenHeight();
-
     static int bodyPartColourCounter = 0;
 
     snake.oldSnakePosition = snake.m_headPosition;
@@ -186,7 +199,9 @@ void PlayingState::update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF
         game.recalcTiles(tiles);
     }
     
+
     game.handleCollisions(snake, tiles);
+    return GameState::StateRequest::none;
 }
 
 bool seenMidpoint(const std::vector<Vector2>& midpoints, const Vector2& point) {
@@ -199,7 +214,6 @@ bool seenMidpoint(const std::vector<Vector2>& midpoints, const Vector2& point) {
 }
 void PlayingState::draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) {
 
-    BeginDrawing();
     ClearBackground(BLACK);
 
 
@@ -356,7 +370,6 @@ void PlayingState::draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_T
         snake.m_headColour
 
     );
-    EndDrawing();
 }
 
 
@@ -366,7 +379,7 @@ void preventOppositeDirection(int& newDirection, int oldDirection) {
     }
 }
 
-void PlayingState::getInput(Snake& snake) {
+GameState::StateRequest PlayingState::getInput(Snake& snake) {
 
     int oldDirection = snake.m_direction;
 
@@ -388,6 +401,11 @@ void PlayingState::getInput(Snake& snake) {
             break;
         }
     }
+
+    if (IsKeyPressed(KEY_ESCAPE) && (GetTime() - timeCreated) > 0.5) {
+        return GameState::StateRequest::pushPauseMenu;
+    }
+    return GameState::StateRequest::none;
     
 }
 
@@ -460,10 +478,25 @@ bool Game::handleCollisions(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_
             apples.erase(apples.begin() + i);
             snake.m_length++;
             
-            //srand((unsigned int)time(nullptr));
             Vector2 pos;
             pos.x = floor(rand() % NUMBER_OF_TILES);
             pos.y = floor(rand() % NUMBER_OF_TILES);
+
+            if (pos.x == playerPostion.x && pos.y == playerPostion.y) {
+                // If the new apple spawns on the player's head, try again
+                i--;
+                continue;
+            }
+
+            for (const auto& bp : bodyParts) {
+                if (bp.isColliding(pos)) {
+                    #ifdef PRINT_DEBUG_INFO
+                        std::cout << "Apple spawned on body part at (" << pos.x << ", " << pos.y << "). Retrying..." << std::endl;
+                    #endif
+                    i--;
+                    continue;
+                }
+            }
 
             apples.emplace_back(pos, CollisionObject::Apple, RED);
 
@@ -483,3 +516,73 @@ bool Game::isAdjacent(const Vector2& pos1, const Vector2& pos2) {
     int dy = std::abs(floor(pos1.y) - floor(pos2.y));
     return (dx + dy) == 1;
 }
+
+void Game::processRequest(GameState::StateRequest request) {
+    if (request == GameState::StateRequest::none) {
+        return;
+    }
+
+    switch (request) {
+        case GameState::StateRequest::popMe:
+            if (!stateStack.empty()) {
+                stateStack.erase(stateStack.begin());
+            }
+            break;
+
+        /*case GameState::StateRequest::pushMainMenu:
+            stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
+            break; */
+
+        case GameState::StateRequest::pushPlaying:
+            stateStack.insert(stateStack.begin(), std::make_unique<PlayingState>());
+            break;
+
+        case GameState::StateRequest::pushPauseMenu:
+            stateStack.insert(stateStack.begin(), std::make_unique<PauseMenuState>());
+            break;
+
+        /*case GameState::StateRequest::pushGameOver:
+            stateStack.insert(stateStack.begin(), std::make_unique<GameOverState>());
+            break; 
+
+        case GameState::StateRequest::clearAndPushMainMenu:
+            stateStack.clear();
+            stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
+            break; */
+
+        default:
+            break;
+    }
+}
+
+void Game::globalUpdate(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]) {
+    recalcTiles(tiles);
+    m_screenWidth = GetScreenWidth();
+    m_screenHeight = GetScreenHeight();
+}
+
+PauseMenuState::StateRequest PauseMenuState::getInput(Snake& snake) {
+
+    if (IsKeyDown(KEY_ESCAPE) && (GetTime() - timeCreated) > 0.5) {
+        return GameState::StateRequest::popMe;
+    }
+    return GameState::StateRequest::none; 
+}
+
+PauseMenuState::StateRequest PauseMenuState::update(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) {
+
+    double frameTime = GetFrameTime();
+
+    if (IsWindowResized()) {
+        game.calculateSquareDimensions(game.m_squareSize, game.m_offsetX, game.m_offsetY);
+        game.recalcTiles(tiles);
+    }
+
+    return GameState::StateRequest::none; 
+}
+
+void PauseMenuState::draw(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES], Game& game) {
+
+    DrawText("PAUSED", game.m_screenWidth / 2 - MeasureText("PAUSED", 80) / 2, game.m_screenHeight / 2 - 20, 80, WHITE);
+
+} 
