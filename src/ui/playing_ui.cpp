@@ -16,6 +16,13 @@ void PlayingUI::draw(GameContext& context) {
 
     DrawText(
         ("Score: " + std::to_string(context.snake.m_length)).c_str(),
+        scoreTextLocation.x + 3,
+        scoreTextLocation.y + 3,
+        defaultFontSize,
+        GRAY
+    );
+    DrawText(
+        ("Score: " + std::to_string(context.snake.m_length)).c_str(),
         scoreTextLocation.x,
         scoreTextLocation.y,
         defaultFontSize,

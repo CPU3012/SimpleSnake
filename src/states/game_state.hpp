@@ -19,7 +19,8 @@ class GameState {
             pushPauseMenu,
             pushPlaying,
             pushGameOver,
-            clearAndPushMainMenu
+            clearAndPushMainMenu,
+            clearAndPushPlaying
         };
 
 

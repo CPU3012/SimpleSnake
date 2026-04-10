@@ -14,7 +14,7 @@ PauseMenuState::StateRequest PauseMenuState::update(GameContext& context) {
     double frameTime = GetFrameTime();
 
     if (IsWindowResized()) {
-        Utilities::calculateSquareDimensions(GetScreenWidth(), GetScreenHeight(), context.squareSize, context.offsetX, context.offsetY);
+        Utilities::calculateSquareDimensions(context.squareSize, context.offsetX, context.offsetY);
         Utilities::recalcTiles(context);
     }
 
@@ -36,10 +36,11 @@ void PauseMenuState::draw(GameContext& context) {
         screenMidPoint.x - (pauseTextBackgroundSize.x / 2),
         screenMidPoint.y - (pauseTextBackgroundSize.y / 2.5),
         pauseTextBackgroundSize.x,
-        pauseTextBackgroundSize.y,
+        pauseTextBackgroundSize.y*1.1f,
         Fade(BLACK, (float)0.5)
     );
 
+    DrawText("PAUSED", (screenMidPoint.x - textWidth / 2) + 4, (screenMidPoint.y - 20) + 4, pausedTextSize, GRAY);
     DrawText("PAUSED", screenMidPoint.x - textWidth / 2, screenMidPoint.y - 20, pausedTextSize, WHITE);
     
 } 

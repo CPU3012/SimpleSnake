@@ -31,7 +31,7 @@ class Game{
         void play();
 
         void processRequest(GameState::StateRequest request);
-        void globalUpdate(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
+        void globalUpdate();
 
         std::vector<std::unique_ptr<GameState>> stateStack;
 

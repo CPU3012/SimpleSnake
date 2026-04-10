@@ -17,7 +17,7 @@ namespace Utilities {
 
     bool seenMidpoint(const std::vector<Utilities::Vector2<int>>& midpoints, const Utilities::Vector2<int>& point);
 
-    void calculateSquareDimensions(int screenWidth, int screenHeight, int& squareSize, int& offsetX, int& offsetY);
+    void calculateSquareDimensions(int& squareSize, int& offsetX, int& offsetY);
 
     void recalcTiles(GameContext& context);
 

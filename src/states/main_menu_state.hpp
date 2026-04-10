@@ -8,4 +8,5 @@ class MainMenuState : public GameState {
         GameState::StateRequest getInput(GameContext& context) override;
         GameState::StateRequest update(GameContext& context) override;
         void draw(GameContext& context) override;
+        MainMenuState();
 };

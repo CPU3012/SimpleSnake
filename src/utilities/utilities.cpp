@@ -38,7 +38,9 @@ void Utilities::headPosOverflow(Snake& snake) {
 
 
 // Calculate and store the dimensions of a perfect square that fits exactly inside the window
-void Utilities::calculateSquareDimensions(int screenWidth, int screenHeight, int& squareSize, int& offsetX, int& offsetY) {
+void Utilities::calculateSquareDimensions(int& squareSize, int& offsetX, int& offsetY) {
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
 
     // Determine the size of the square (smallest dimension)
     squareSize = std::min(screenWidth, screenHeight);

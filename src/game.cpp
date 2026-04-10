@@ -41,7 +41,7 @@ std::string DebugInfo::getSnakeReport(Snake& snake){
 }
 
 Game::Game() {
-    init(800, 800); // Initial Window Dimentions
+    init(700, 700); // Initial Window Dimentions
 }
 Game::~Game(){
     CloseWindow(); 
@@ -51,7 +51,7 @@ void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Snake Game");
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simple Snake");
 
     SetExitKey(KEY_NULL);
 
@@ -61,11 +61,12 @@ void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
 
 
     // Initialize snake properties, should probably be moved
-    context.snake.m_bodyColour = SKYBLUE;
+    //context.snake.m_bodyColour = SKYBLUE;
+    context.snake.m_bodyColour = Color{ 109, 163, 230, 255 };
     context.snake.m_headColour = BLUE;
     context.snake.m_length = 0;
     context.snake.speed = 4.0f;
-    context.snake.multiColourBody = true;
+    context.snake.multiColourBody = false;
 
     // 0 = up, 90 = right, 180 = down, 270 = left
     context.snake.currentDirectionofTravel = 90;
@@ -84,6 +85,7 @@ void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
     // Initialize random seed
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
+    context.bodyParts.clear();
 }
 
 void Game::play() {
@@ -93,42 +95,22 @@ void Game::play() {
     srand((unsigned int)time(nullptr));
 
     
-    Utilities::calculateSquareDimensions(m_screenWidth, m_screenHeight, context.squareSize, context.offsetX, context.offsetY);
+    Utilities::calculateSquareDimensions(context.squareSize, context.offsetX, context.offsetY);
     Utilities::recalcTiles(context);
 
-    context.bodyParts.clear();
 
+    stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
 
-    // Spawn apples at random positions
-    context.apples.clear();
-    int numApples = 3; // Set how many apples you want initially
-    for (int i = 0; i < numApples; ++i) {
-        Utilities::Vector2<int> pos;
-        pos.x = floor(rand() % NUMBER_OF_TILES);
-        pos.y = floor(rand() % NUMBER_OF_TILES);
-        context.apples.emplace_back(Vector2{ (float)pos.x, (float)pos.y }, CollisionObject::Apple, RED);
-    }
-
-    // placeholder
-    stateStack.insert(stateStack.begin(), std::make_unique<PlayingState>());
-
-
-    
-    // ------------------------------------------------------------------------- Main game loop -----------------------------------------------------------------
+    // Main game loop
     while (!WindowShouldClose()) {
-        // Update global game properties that states may need
-        globalUpdate(context.snake, context.tiles);
-
-        // Get input and update the top state
         GameState::StateRequest request = stateStack.front()->getInput(context);
 
         if (request == GameState::StateRequest::none) request = stateStack.front()->update(context);
 
         processRequest(request);
 
-        // Iterate through all states and draw them, drawing the bottom states first and the top states last so that they render on top of each other correctly
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(GRAY);
         for (auto state = stateStack.rbegin(); state != stateStack.rend(); ++state) {
             (*state)->draw(context);
         }
@@ -156,9 +138,9 @@ void Game::processRequest(GameState::StateRequest request) {
             }
             break;
 
-        /*case GameState::StateRequest::pushMainMenu:
+        case GameState::StateRequest::pushMainMenu:
             stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
-            break; */
+            break; 
 
         case GameState::StateRequest::pushPlaying:
             stateStack.insert(stateStack.begin(), std::make_unique<PlayingState>());
@@ -177,13 +159,12 @@ void Game::processRequest(GameState::StateRequest request) {
             stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
             break; */
 
+        case GameState::StateRequest::clearAndPushPlaying:
+            stateStack.clear();
+            stateStack.insert(stateStack.begin(), std::make_unique<PlayingState>());
+            break;
+
         default:
             break;
     }
-}
-
-void Game::globalUpdate(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]) {
-    Utilities::recalcTiles(context);
-    m_screenWidth = GetScreenWidth();
-    m_screenHeight = GetScreenHeight();
 }

@@ -17,6 +17,8 @@
 
 PlayingState::PlayingState() {
     ui = std::make_unique<PlayingUI>();
+
+    
 }
 
 void preventOppositeDirection(int& newDirection, int oldDirection) {
@@ -76,7 +78,21 @@ GameState::StateRequest PlayingState::update(GameContext& context) {
     static int bodyPartColourCounter = 0;
 
     context.snake.oldSnakePosition = context.snake.headPosition;
-   
+
+    static bool hasSpawnedApples = false;
+    if (!hasSpawnedApples) {
+        context.apples.clear();
+        int numApples = 3; // Set how many apples you want initially
+        for (int i = 0; i < numApples; ++i) {
+            Utilities::Vector2<int> pos;
+            pos.x = floor(rand() % NUMBER_OF_TILES);
+            pos.y = floor(rand() % NUMBER_OF_TILES);
+            context.apples.emplace_back(Vector2{ (float)pos.x, (float)pos.y }, CollisionObject::Apple, RED);
+        }
+
+        hasSpawnedApples = true;
+    }
+
     auto isAboutToMoveTile = [&context, frameTime]() {
         Vector2 newHeadPosition;
 
@@ -188,7 +204,7 @@ GameState::StateRequest PlayingState::update(GameContext& context) {
     }
 
     if (IsWindowResized()) {
-        Utilities::calculateSquareDimensions(GetScreenWidth(), GetScreenHeight(), context.squareSize, context.offsetX, context.offsetY);
+        Utilities::calculateSquareDimensions(context.squareSize, context.offsetX, context.offsetY);
         Utilities::recalcTiles(context);
     }
     
@@ -402,6 +418,7 @@ bool PlayingState::handleCollisions(GameContext& context) {
 
                 pos.x = floor(rand() % NUMBER_OF_TILES);
                 pos.y = floor(rand() % NUMBER_OF_TILES);
+
             }
 
        

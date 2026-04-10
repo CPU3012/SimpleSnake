@@ -29,6 +29,7 @@ set(SOURCES
     src/states/game_over_state.cpp
     src/ui/ui.cpp
     src/ui/playing_ui.cpp
+    src/ui/menu_ui.cpp
     src/app.rc
 )
 
@@ -39,9 +40,6 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
-
-# Might add console window disabling for later
-#---------------
 
 # copy the assets folder
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
