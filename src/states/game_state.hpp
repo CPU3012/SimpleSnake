@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "game_context.hpp"
+#include "ui/ui.hpp"
 
 class GameState {
     public:
@@ -23,6 +24,8 @@ class GameState {
 
 
         double timeCreated = GetTime();
+        std::unique_ptr<UI> ui;
+    
 
         virtual GameState::StateRequest getInput(GameContext& context) = 0;
         virtual GameState::StateRequest update(GameContext& context) = 0;

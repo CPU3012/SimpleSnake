@@ -3,6 +3,8 @@
 #include <raylib.h>
 #include <vector>
 
+#include "utilities/utilites.hpp"
+
 struct bodyPart;
 
 class Snake{
@@ -12,8 +14,8 @@ class Snake{
         double speed; //The rate of change of distance in tiles per second
 
         int m_length;
-        int m_direction;
-        int m_currentDirectionofTravel;
+        int currentDirectionofTravel;
+        int anticipatedDirection;
         int m_tileDirectionofTravel; // Updates only when the snake moves a full tile
 
         bool multiColourBody;
@@ -21,11 +23,13 @@ class Snake{
         Color m_headColour;
         Color m_bodyColour;
 
-        Vector2 m_headPosition;
+        Vector2 headPosition;
         Vector2 oldSnakePosition;
         
         std::vector<bodyPart> m_body;
         std::vector<Color> bodyColours;
+
+        char getAxisOfMovement();
         
         
 };

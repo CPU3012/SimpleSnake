@@ -10,11 +10,13 @@
 #include "collision_object.hpp"
 
 struct GameContext {
+
+    // These should really be pointers
     Snake snake;
     Tile tiles[NUMBER_OF_TILES][NUMBER_OF_TILES];
 
     int squareSize = 0;
-    int offsetX = 0;   
+    int offsetX = 0;  
     int offsetY = 0;
 
     std::vector<CollisionObject> apples;

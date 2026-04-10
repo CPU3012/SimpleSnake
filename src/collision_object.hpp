@@ -2,6 +2,9 @@
 
 #include <raylib.h>
 #include <vector>
+#include <cmath>
+
+#include "utilities/utilites.hpp"
 
 struct CollisionObject
 {
@@ -22,7 +25,7 @@ struct CollisionObject
         : position(pos), type(t), colour(c) {}
 
     
-    bool isColliding(const Vector2& otherPos) const {
-        return (int)this->position.x == (int)otherPos.x && (int)this->position.y == (int)otherPos.y;
+    bool isColliding(const Utilities::Vector2<int>& otherPos) const {
+        return floor(position.x) == otherPos.x && floor(position.y) == otherPos.y;
     }
 };

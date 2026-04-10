@@ -1,4 +1,4 @@
-# This CMake file may serve as a kind of template for future cmake files of mine (still learning cmake lmao)
+# CMakeLists.txt
 cmake_minimum_required(VERSION 3.20)
 
 project(SimpleSnake CXX)
@@ -6,7 +6,7 @@ project(SimpleSnake CXX)
 # Dependencies
 include(FetchContent)
 
-# Raylib Stuff
+# Fetch Raylib
 set(RAYLIB_VERSION 4.5.0)
 FetchContent_Declare(
     raylib
@@ -16,7 +16,7 @@ FetchContent_Declare(
 SET(RAYLIB_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 FetchContent_MakeAvailable(raylib)
 
-# Variable containing source files for refrerence later
+# Variable containing all source files that will be compiled
 set(SOURCES
     src/main.cpp
     src/game.cpp
@@ -27,6 +27,8 @@ set(SOURCES
     src/states/playing_state.cpp
     src/states/pause_menu_state.cpp
     src/states/game_over_state.cpp
+    src/ui/ui.cpp
+    src/ui/playing_ui.cpp
     src/app.rc
 )
 
@@ -41,9 +43,21 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 # Might add console window disabling for later
 #---------------
 
+# copy the assets folder
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/assets"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+)
+
 # MacOS Stuff
 if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework IOKit")
     target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()
+
+# Windows Stuff
+if (WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()

@@ -16,7 +16,6 @@
 #include <memory>
 
 #include <iostream>
-//#define PRINT_DEBUG_INFO
 
 #ifdef PRINT_DEBUG_INFO
     DebugInfo debug;
@@ -34,9 +33,9 @@ std::string DebugInfo::getSnakeReport(Snake& snake){
     lastReportTime = GetTime();
 
     return  
-        "Current Direction of Travel: " + std::to_string(snake.m_currentDirectionofTravel) +
-        " Direction: " + std::to_string(snake.m_direction) +
-        " Head Position: (" + std::to_string(snake.m_headPosition.x) + ", " + std::to_string(snake.m_headPosition.y) + ")" +
+        "Current Direction of Travel: " + std::to_string(snake.currentDirectionofTravel) +
+        "Anticipated Direction: " + std::to_string(snake.anticipatedDirection) +
+        " Head Position: (" + std::to_string(snake.headPosition.x) + ", " + std::to_string(snake.headPosition.y) + ")" +
         " Score: " + std::to_string(snake.m_length) +
         "\n";
 }
@@ -51,20 +50,29 @@ Game::~Game(){
 void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Snake Game");
+
     SetExitKey(KEY_NULL);
 
-    // Initialize snake properties
+    windowIcon = LoadImage("assets/icons/app_icon.png");
+    SetWindowIcon(windowIcon);
+    UnloadImage(windowIcon);
+
+
+    // Initialize snake properties, should probably be moved
     context.snake.m_bodyColour = SKYBLUE;
     context.snake.m_headColour = BLUE;
     context.snake.m_length = 0;
-    context.snake.speed = 4.0;
+    context.snake.speed = 4.0f;
     context.snake.multiColourBody = true;
 
-    context.snake.m_direction = 90; // 0 = up, 90 = right, 180 = down, 270 = left
-    context.snake.m_currentDirectionofTravel = 90;
+    // 0 = up, 90 = right, 180 = down, 270 = left
+    context.snake.currentDirectionofTravel = 90;
+    context.snake.m_tileDirectionofTravel = 90;
+    context.snake.anticipatedDirection = 90;
 
-    context.snake.m_headPosition.x = 0; context.snake.m_headPosition.y = 0;
+    context.snake.headPosition.x = 0; context.snake.headPosition.y = 0;
     context.snake.oldSnakePosition.x = 0; context.snake.oldSnakePosition.y = 0;
 
     context.snake.bodyColours.clear();
@@ -76,7 +84,6 @@ void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
     // Initialize random seed
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-    //SetTargetFPS(180);
 }
 
 void Game::play() {
@@ -96,10 +103,10 @@ void Game::play() {
     context.apples.clear();
     int numApples = 3; // Set how many apples you want initially
     for (int i = 0; i < numApples; ++i) {
-        Vector2 pos;
+        Utilities::Vector2<int> pos;
         pos.x = floor(rand() % NUMBER_OF_TILES);
         pos.y = floor(rand() % NUMBER_OF_TILES);
-        context.apples.emplace_back(pos, CollisionObject::Apple, RED);
+        context.apples.emplace_back(Vector2{ (float)pos.x, (float)pos.y }, CollisionObject::Apple, RED);
     }
 
     // placeholder

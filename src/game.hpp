@@ -33,15 +33,12 @@ class Game{
         void processRequest(GameState::StateRequest request);
         void globalUpdate(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
 
-        bool handleCollisions(Snake& snake, Tile (&tiles)[NUMBER_OF_TILES][NUMBER_OF_TILES]);
-
-        Vector2 getMaxSquareSize();
-
-
         std::vector<std::unique_ptr<GameState>> stateStack;
 
         int m_screenWidth = GetScreenWidth();
         int m_screenHeight = GetScreenHeight();
+
+        Image windowIcon;
 
         GameContext context;
 

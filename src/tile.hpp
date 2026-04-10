@@ -2,7 +2,7 @@
 
 #include <raylib.h>
 
-#define NUMBER_OF_TILES 8
+#define NUMBER_OF_TILES 10
 
 class Tile {
 public:
