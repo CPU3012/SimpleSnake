@@ -25,7 +25,8 @@ GameState::StateRequest MainMenuState::update(GameContext& context) {
 
     // Update button positions in case of screen resizing
     if (!ui->buttons.empty() || IsWindowResized()) {
-        ui->buttons[0].position.y = screenHeight / 2;
+        ui->buttons[START_BUTTON_INDEX].position.y = screenHeight / 2;
+        ui->buttons[ABOUT_BUTTON_INDEX].position.y = (screenHeight / 2) + (screenHeight / 10);
 
         for (auto& button : ui->buttons) {
             button.position.x = screenMid - (button.width / 2);
@@ -41,10 +42,15 @@ GameState::StateRequest MainMenuState::update(GameContext& context) {
     }
 
 
+    if (!ui->buttons.empty()) {
+        if (ui->buttons[START_BUTTON_INDEX].isClicked()) {
+            // Should probably also play a sound effect here
+            return GameState::StateRequest::clearAndPushPlaying;
+        }
 
-    if (!ui->buttons.empty() && ui->buttons[START_BUTTON_INDEX].isClicked()) {
-        // Should probably also play a sound effect here
-        return GameState::StateRequest::clearAndPushPlaying;
+        if (ui->buttons[ABOUT_BUTTON_INDEX].isClicked()) {
+            // Does nothing currently
+        }
     }
     return GameState::StateRequest::none;
 }

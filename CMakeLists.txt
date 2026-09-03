@@ -41,8 +41,7 @@ target_link_libraries(${PROJECT_NAME} raylib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-# link statically to the C and C++ standard libraries
-target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++ -static)
+
 
 # copy the assets folder
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -51,14 +50,17 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
 )
 
+if (MINGW)
+    target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++ -static)
+endif()
+
 # MacOS Stuff
 if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework IOKit")
     target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
-endif()
 
-# Windows Stuff
-if (WIN32)
+elseif (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+    
 endif()

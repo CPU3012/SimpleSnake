@@ -15,13 +15,14 @@ MenuUI::MenuUI() {
   
     int screenMid = screenWidth / 2;
 
-    int buttonSeparation = screenHeight / 15;
+    int buttonSeparation = screenHeight / 10;
 
     Utilities::Vector2<int> startButtonLocation = {(MeasureText(startButtonText, buttonFontSize) / 2), screenHeight / 2 };
     Utilities::Vector2<int> aboutButtonLocation = {screenMid, screenMid + buttonSeparation };
     Utilities::Vector2<int> settingsButtonLocation = {screenMid, screenMid + (buttonSeparation * 2) };
     Utilities::Vector2<int> exitButtonLocation = {screenMid, screenMid + (buttonSeparation * 3) };
    
+
     RectangularButton startButton = RectangularButton();
     startButton.initialise(
         startButtonText, 
@@ -30,8 +31,18 @@ MenuUI::MenuUI() {
         WHITE, 
         BLUE
     );
-
     buttons.push_back(startButton);
+
+
+    RectangularButton aboutButton = RectangularButton();
+    aboutButton.initialise(
+        ABOUT_BUTTON_TEXT, 
+        buttonFontSize, 
+        aboutButtonLocation, 
+        WHITE, 
+        BLUE
+    );
+    buttons.push_back(aboutButton);
 }
 
 void MenuUI::draw(GameContext& context) {
