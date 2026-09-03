@@ -1,0 +1,1 @@
+#define FPS_LIMIT 300 // -1 for uncapped

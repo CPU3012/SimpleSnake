@@ -5,6 +5,7 @@
 #include "states/playing_state.hpp"
 #include "states/pause_menu_state.hpp"
 #include "states/game_over_state.hpp"
+#include "configuration.hpp"
 
 #include <raylib.h>
 #include <vector>
@@ -58,6 +59,10 @@ void Game::init(int WINDOW_WIDTH, int WINDOW_HEIGHT){
     windowIcon = LoadImage("assets/icons/app_icon.png");
     SetWindowIcon(windowIcon);
     UnloadImage(windowIcon);
+
+    if (FPS_LIMIT > 0) {
+        SetTargetFPS(FPS_LIMIT);    
+    }
 
 
     // Initialize snake properties, should probably be moved
