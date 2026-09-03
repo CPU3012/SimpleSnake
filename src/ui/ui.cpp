@@ -87,3 +87,20 @@ void UI::RectangularButton::initialise(const char* text, int fontSize, Utilities
     this->width = textSize.x * 1.3;
     this->height = textSize.y * 1.3;
 }
+
+
+void UI::RectangularButton::updateButtonHover(Color restColour, Color hoverColour) {
+    if (isMouseOver()) {
+        BorderColour = hoverColour;
+    } else {
+        BorderColour = restColour;
+    }
+}
+
+void UI::drawTextCool(const char *text, int x, int y, int fontSize, Color colour) {
+    int shadowOffset = fontSize / 11.5;
+    if (shadowOffset <= 0) shadowOffset = 1;
+
+    DrawText(text, x + shadowOffset, y + shadowOffset, fontSize, GRAY);
+    DrawText(text, x, y, fontSize, colour);
+}

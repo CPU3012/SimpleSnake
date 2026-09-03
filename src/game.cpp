@@ -150,11 +150,11 @@ void Game::processRequest(GameState::StateRequest request) {
             stateStack.insert(stateStack.begin(), std::make_unique<PauseMenuState>());
             break;
 
-        /*case GameState::StateRequest::pushGameOver:
+        case GameState::StateRequest::pushGameOver:
             stateStack.insert(stateStack.begin(), std::make_unique<GameOverState>());
             break; 
 
-        case GameState::StateRequest::clearAndPushMainMenu:
+        /*case GameState::StateRequest::clearAndPushMainMenu:
             stateStack.clear();
             stateStack.insert(stateStack.begin(), std::make_unique<MainMenuState>());
             break; */

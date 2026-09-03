@@ -14,18 +14,9 @@ void PlayingUI::draw(GameContext& context) {
     Utilities::Vector2<int> scoreTextLocation = {squareLeftWall, squareTopWall};
     scoreTextLocation = applyMargin(scoreTextLocation, context.squareSize, context.squareSize);
 
-    DrawText(
-        ("Score: " + std::to_string(context.snake.m_length)).c_str(),
-        scoreTextLocation.x + 3,
-        scoreTextLocation.y + 3,
-        defaultFontSize,
-        GRAY
-    );
-    DrawText(
-        ("Score: " + std::to_string(context.snake.m_length)).c_str(),
-        scoreTextLocation.x,
-        scoreTextLocation.y,
-        defaultFontSize,
-        WHITE
-    );
+    // Draw score
+    drawTextCool(("Score: " + std::to_string(context.snake.m_length)).c_str(), scoreTextLocation.x, scoreTextLocation.y, defaultFontSize, WHITE);
+
+    // Draw FPS
+    drawTextCool(("FPS: " + std::to_string(GetFPS())).c_str(), scoreTextLocation.x, scoreTextLocation.y + defaultFontSize +1, defaultFontSize, WHITE);
 }

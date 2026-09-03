@@ -26,6 +26,8 @@ void preventOppositeDirection(int& newDirection, int oldDirection) {
         newDirection = oldDirection; // Revert to old direction if the new direction is opposite
     }
 }
+
+
 GameState::StateRequest PlayingState::getInput(GameContext& context) {
     static bool inputLocked = false;
     if (floor(context.snake.headPosition.x) != floor(context.snake.oldSnakePosition.x) ) {
@@ -68,146 +70,16 @@ GameState::StateRequest PlayingState::getInput(GameContext& context) {
 
 
 GameState::StateRequest PlayingState::update(GameContext& context) {
-
-    auto hasMovedTile = [&context]() {
-        return floor(context.snake.headPosition.x) != floor(context.snake.oldSnakePosition.x) || floor(context.snake.headPosition.y) != floor(context.snake.oldSnakePosition.y);
-    };
-
     double frameTime = GetFrameTime();
     double delta = context.snake.speed * double(frameTime);
-    static int bodyPartColourCounter = 0;
-
     context.snake.oldSnakePosition = context.snake.headPosition;
-
-    static bool hasSpawnedApples = false;
-    if (!hasSpawnedApples) {
-        context.apples.clear();
-        int numApples = 3; // Set how many apples you want initially
-        for (int i = 0; i < numApples; ++i) {
-            Utilities::Vector2<int> pos;
-            pos.x = floor(rand() % NUMBER_OF_TILES);
-            pos.y = floor(rand() % NUMBER_OF_TILES);
-            context.apples.emplace_back(Vector2{ (float)pos.x, (float)pos.y }, CollisionObject::Apple, RED);
-        }
-
-        hasSpawnedApples = true;
-    }
-
-    auto isAboutToMoveTile = [&context, frameTime]() {
-        Vector2 newHeadPosition;
-
-        switch (context.snake.currentDirectionofTravel) {
-            case 0:
-                newHeadPosition.y -= (context.snake.speed) * double(frameTime);
-                break;
-
-            case 90:
-                newHeadPosition.x += (context.snake.speed) * double(frameTime);
-                break;
-
-            case 180:
-                newHeadPosition.y += (context.snake.speed) * double(frameTime);
-                break;
-                
-            case 270:
-                newHeadPosition.x -= (context.snake.speed) * double(frameTime);
-                break;
-        }
-
-
-        if (Utilities::samePositionV(context.snake.headPosition, newHeadPosition)) {
-            return false;
-        }
-
-        return true;
-    };
     
     
-    
-    if (isAboutToMoveTile()) {
-        // If the anticipated direction is different from the current direction, floor any fractional tile movement in the previous axis
-        if (context.snake.currentDirectionofTravel != context.snake.anticipatedDirection){
-
-            if (context.snake.getAxisOfMovement() == 'y') {
-                context.snake.headPosition.y == floor(context.snake.headPosition.y);
-            }
-
-            if (context.snake.getAxisOfMovement() == 'x') {
-                context.snake.headPosition.x == floor(context.snake.headPosition.x);
-            } 
-        }
-
-        context.snake.currentDirectionofTravel = context.snake.anticipatedDirection;
-    }
-
-    switch (context.snake.currentDirectionofTravel) {
-        case 0:
-            context.snake.headPosition.y -= (context.snake.speed) * double(frameTime);
-            Utilities::headPosOverflow(context.snake);
-            break;
-
-        case 90:
-            context.snake.headPosition.x += (context.snake.speed) * double(frameTime);
-            Utilities::headPosOverflow(context.snake);
-
-            break;
-
-        case 180:
-            context.snake.headPosition.y += (context.snake.speed) * double(frameTime);
-            Utilities::headPosOverflow(context.snake);
-            break;
-            
-        case 270:
-            context.snake.headPosition.x -= (context.snake.speed) * double(frameTime);
-            Utilities::headPosOverflow(context.snake);
-
-            break;
-    }
-    
-
-    
-    
-    if (hasMovedTile()) {
-        context.snake.m_tileDirectionofTravel = context.snake.currentDirectionofTravel;
-
-        if(!context.snake.multiColourBody && context.snake.m_length > 0 || context.snake.m_length == 1) {
-            context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.m_bodyColour);
-
-        } else if (context.snake.multiColourBody && context.snake.m_length > 0) {
-            if (!context.snake.bodyColours.empty()) {
-                int index = context.snake.m_length % (context.snake.bodyColours.size() - 1);
-
-                context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.bodyColours[index + bodyPartColourCounter]);
-
-                bodyPartColourCounter++;
-                if (bodyPartColourCounter >= context.snake.bodyColours.size()) {
-                    bodyPartColourCounter = 0;
-                }
-
-            } else {
-                context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.m_bodyColour);
-            }
-        }
-
-        if (context.bodyParts.size() > context.snake.m_length) {
-            context.bodyParts.erase(context.bodyParts.begin());
-        }
-
-        
-      
-
-        #ifdef PRINT_DEBUG_INFO
-            DebugInfo debug;
-            std::cout << debug.getSnakeReport(context.snake) << std::endl;
-        #endif
-
-    }
-
-    if (IsWindowResized()) {
-        Utilities::calculateSquareDimensions(context.squareSize, context.offsetX, context.offsetY);
-        Utilities::recalcTiles(context);
-    }
-    
+    updateApples(context);
+    updateSnakePosition(context, frameTime);
+    updateSnakeLength(context); 
+   
+    resizeGame(context);
 
     PlayingState::handleCollisions(context);
     return GameState::StateRequest::none;
@@ -216,8 +88,8 @@ GameState::StateRequest PlayingState::update(GameContext& context) {
 
 
 
-
 void PlayingState::draw(GameContext& context) {
+    ClearBackground(SKYBLUE);
 
     Utilities::Vector2<int> playerPostion;
     playerPostion.x = std::clamp(int(context.snake.headPosition.x), 0, (NUMBER_OF_TILES - 1));
@@ -226,48 +98,24 @@ void PlayingState::draw(GameContext& context) {
     float bodyPartSizeFactor = 0.8f;
     float headSizeFactor = 0.9f;
 
-    // Draw tile pattern
-    Color tileColour;
-    for(int i = 0; i < NUMBER_OF_TILES; i++){
-        for(int i2 = 0; i2 < NUMBER_OF_TILES; i2++){
-
-            if (((i + 1) + (i2 + 1)) % 2 == 0) {
-                // Odd
-                tileColour =  Color(230, 225, 197, 255); 
-            } else {
-                // Even
-                tileColour = Color(212, 203, 146, 255);
-            }
-            
-            DrawRectangle(
-
-                int(context.tiles[i][i2].position.x),
-                int(context.tiles[i][i2].position.y),
-
-                (context.squareSize / NUMBER_OF_TILES),
-                (context.squareSize / NUMBER_OF_TILES),
-
-                tileColour
-
-            );
-
-        }
-    }
+    drawTilePattern(TILE_COLOUR_1, TILE_COLOUR_2, context);
+  
 
     // Draw apples
     for (const auto& apple : context.apples) {
-    // Clamp apple position to board limits, idk if this is necessary but I did it anyway
-    int x = std::clamp(int(apple.position.x), 0, NUMBER_OF_TILES - 1);
-    int y = std::clamp(int(apple.position.y), 0, NUMBER_OF_TILES - 1);
+        // Clamp apple position to board limits, idk if this is necessary but I did it anyway
+        int x = std::clamp(int(apple.position.x), 0, NUMBER_OF_TILES - 1);
+        int y = std::clamp(int(apple.position.y), 0, NUMBER_OF_TILES - 1);
 
-    DrawRectangle(
-        int(context.tiles[x][y].position.x),
-        int(context.tiles[x][y].position.y),
-        (context.squareSize / NUMBER_OF_TILES),
-        (context.squareSize / NUMBER_OF_TILES),
-        apple.colour
-    );
-}
+        DrawRectangle(
+            int(context.tiles[x][y].position.x),
+            int(context.tiles[x][y].position.y),
+            (context.squareSize / NUMBER_OF_TILES),
+            (context.squareSize / NUMBER_OF_TILES),
+            apple.colour
+        );
+    }
+
     // Draw a seamless box between body parts
     if (!context.bodyParts.empty()) {
         for (auto &bp : context.bodyParts) bp.numConnections = 0;
@@ -433,4 +281,167 @@ bool PlayingState::handleCollisions(GameContext& context) {
     }
 
     return false;
+}
+
+
+void PlayingState::drawTilePattern(Color firstColour, Color secondColour, GameContext& context) {
+    Color tileColour;
+    for(int i = 0; i < NUMBER_OF_TILES; i++){
+        for(int i2 = 0; i2 < NUMBER_OF_TILES; i2++){
+
+            if (((i + 1) + (i2 + 1)) % 2 == 0) {
+                // Odd
+                tileColour =  Color(230, 225, 197, 255); 
+            } else {
+                // Even
+                tileColour = Color(212, 203, 146, 255);
+            }
+            
+            DrawRectangle(
+
+                int(context.tiles[i][i2].position.x),
+                int(context.tiles[i][i2].position.y),
+
+                (context.squareSize / NUMBER_OF_TILES),
+                (context.squareSize / NUMBER_OF_TILES),
+
+                tileColour
+
+            );
+
+        }
+    }
+}
+
+
+void PlayingState::updateApples(GameContext& context) {
+    static bool hasSpawnedApples = false;
+
+    if (!hasSpawnedApples) {
+        context.apples.clear();
+        int numApples = 3; // Set initial number of apples
+        for (int i = 0; i < numApples; ++i) {
+            Utilities::Vector2<int> pos;
+            pos.x = floor(rand() % NUMBER_OF_TILES);
+            pos.y = floor(rand() % NUMBER_OF_TILES);
+            context.apples.emplace_back(Vector2{ (float)pos.x, (float)pos.y }, CollisionObject::Apple, RED);
+        }
+
+        hasSpawnedApples = true;
+    }
+}
+
+
+void PlayingState::updateSnakePosition(GameContext& context, double frameTime) {
+    static int bodyPartColourCounter = 0;
+
+    auto hasMovedTile = [&context]() {
+        return floor(context.snake.headPosition.x) != floor(context.snake.oldSnakePosition.x) || floor(context.snake.headPosition.y) != floor(context.snake.oldSnakePosition.y);
+    };
+
+    auto isAboutToMoveTile = [&context, frameTime]() {
+        Vector2 newHeadPosition;
+
+        switch (context.snake.currentDirectionofTravel) {
+            case 0:
+                newHeadPosition.y -= (context.snake.speed) * double(frameTime);
+                break;
+
+            case 90:
+                newHeadPosition.x += (context.snake.speed) * double(frameTime);
+                break;
+
+            case 180:
+                newHeadPosition.y += (context.snake.speed) * double(frameTime);
+                break;
+                
+            case 270:
+                newHeadPosition.x -= (context.snake.speed) * double(frameTime);
+                break;
+        }
+
+
+        if (Utilities::samePositionV(context.snake.headPosition, newHeadPosition)) {
+            return false;
+        }
+
+        return true;
+    };
+
+
+    if (isAboutToMoveTile()) {
+        // If the anticipated direction is different from the current direction, floor any fractional tile movement in the previous axis
+        if (context.snake.currentDirectionofTravel != context.snake.anticipatedDirection){
+
+            if (context.snake.getAxisOfMovement() == 'y') {
+                context.snake.headPosition.y == floor(context.snake.headPosition.y);
+            }
+
+            if (context.snake.getAxisOfMovement() == 'x') {
+                context.snake.headPosition.x == floor(context.snake.headPosition.x);
+            } 
+        }
+
+        context.snake.currentDirectionofTravel = context.snake.anticipatedDirection;
+    }
+
+    switch (context.snake.currentDirectionofTravel) {
+        case 0:
+            context.snake.headPosition.y -= (context.snake.speed) * double(frameTime);
+            Utilities::headPosOverflow(context.snake);
+            break;
+
+        case 90:
+            context.snake.headPosition.x += (context.snake.speed) * double(frameTime);
+            Utilities::headPosOverflow(context.snake);
+
+            break;
+
+        case 180:
+            context.snake.headPosition.y += (context.snake.speed) * double(frameTime);
+            Utilities::headPosOverflow(context.snake);
+            break;
+            
+        case 270:
+            context.snake.headPosition.x -= (context.snake.speed) * double(frameTime);
+            Utilities::headPosOverflow(context.snake);
+
+            break;
+    }
+    
+    if (hasMovedTile()) {
+        context.snake.m_tileDirectionofTravel = context.snake.currentDirectionofTravel;
+
+        if(!context.snake.multiColourBody && context.snake.m_length > 0 || context.snake.m_length == 1) {
+            context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.m_bodyColour);
+
+        } else if (context.snake.multiColourBody && context.snake.m_length > 0) {
+            if (!context.snake.bodyColours.empty()) {
+                int index = context.snake.m_length % (context.snake.bodyColours.size() - 1);
+
+                context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.bodyColours[index + bodyPartColourCounter]);
+
+                bodyPartColourCounter++;
+                if (bodyPartColourCounter >= context.snake.bodyColours.size()) {
+                    bodyPartColourCounter = 0;
+                }
+
+            } else {
+                context.bodyParts.emplace_back(context.snake.oldSnakePosition, CollisionObject::Body, context.snake.m_bodyColour);
+            }
+        }
+    }
+}
+
+void PlayingState::updateSnakeLength(GameContext& context) {
+     if (context.bodyParts.size() > context.snake.m_length) {
+        context.bodyParts.erase(context.bodyParts.begin());
+    }
+}
+
+void PlayingState::resizeGame(GameContext& context) {
+    if (IsWindowResized()) {
+        Utilities::calculateSquareDimensions(context.squareSize, context.offsetX, context.offsetY);
+        Utilities::recalcTiles(context);
+    }
 }

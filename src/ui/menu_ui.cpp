@@ -1,8 +1,11 @@
 #include "ui/menu_ui.hpp"
-#include <raylib.h>
 #include "utilities/utilites.hpp"
 #include "game.hpp"
+
 #include <string>
+#include <raylib.h>
+
+
 
 MenuUI::MenuUI() {
     int screenWidth = GetScreenWidth();

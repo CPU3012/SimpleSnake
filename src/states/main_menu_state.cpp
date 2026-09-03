@@ -34,11 +34,7 @@ GameState::StateRequest MainMenuState::update(GameContext& context) {
     } 
 
     for (auto& button : ui->buttons) {
-        if (button.isMouseOver()) {
-            button.BorderColour = YELLOW;
-        } else {
-            button.BorderColour = GRAY;
-        }
+        button.updateButtonHover(GRAY, YELLOW);
     }
 
 

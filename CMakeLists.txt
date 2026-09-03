@@ -30,6 +30,7 @@ set(SOURCES
     src/ui/ui.cpp
     src/ui/playing_ui.cpp
     src/ui/menu_ui.cpp
+    src/ui/gameover_ui.cpp
     src/app.rc
 )
 

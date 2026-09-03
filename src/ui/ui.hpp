@@ -12,6 +12,8 @@ class UI {
 
         virtual void draw(GameContext& context) = 0;
 
+        void drawTextCool(const char *text, int x, int y, int fontSize, Color colour);
+
         Utilities::Vector2<int> applyMargin(Utilities::Vector2<int> position, int width, int height);
     
         int uiMargin = 0; // UI margin in pixels
@@ -38,7 +40,8 @@ class UI {
             bool isClicked();
 
             void initialise(const char* text, int fontSize, Utilities::Vector2<int> position, Color textColour, Color buttonColour);
-
+            
+            void updateButtonHover(Color restColour, Color hoverColour);
             void draw();
         };
         std::vector<RectangularButton> buttons;
