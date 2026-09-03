@@ -1,5 +1,5 @@
 # CMakeLists.txt
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.50)
 
 project(SimpleSnake CXX)
 
@@ -7,7 +7,7 @@ project(SimpleSnake CXX)
 include(FetchContent)
 
 # Fetch Raylib
-set(RAYLIB_VERSION 4.5.0)
+set(RAYLIB_VERSION 6.0)
 FetchContent_Declare(
     raylib
     URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
@@ -40,6 +40,9 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+# link statically to the C and C++ standard libraries
+target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++ -static)
 
 # copy the assets folder
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
