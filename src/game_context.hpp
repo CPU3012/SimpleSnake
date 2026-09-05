@@ -8,6 +8,7 @@
 #include "snake.hpp"
 #include "tile.hpp"
 #include "collision_object.hpp"
+#include "configuration.hpp"
 
 struct GameContext {
 

@@ -3,6 +3,7 @@
 
 #include "tile.hpp"
 #include "game.hpp"
+#include "configuration.hpp"
 
 
 void Utilities::recalcTiles(GameContext& context) {
@@ -103,4 +104,8 @@ bool Utilities::samePosition(Utilities::Vector2<int> firstVector, Utilities::Vec
     if (firstVector.y != secondVector.y) return false;
 
     return true;
+}
+
+bool Utilities::isEven(int val) {
+    return !(val % 2);
 }

@@ -4,9 +4,6 @@
 #include "ui/playing_ui.hpp"
 #include "game_context.hpp"
 
-#define TILE_COLOUR_1 Color(230, 225, 197, 255)
-#define TILE_COLOUR_2 Color(212, 203, 146, 255)
-
 class PlayingState : public GameState {
     public:
         GameState::StateRequest getInput(GameContext& context) override;

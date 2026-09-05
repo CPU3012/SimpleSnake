@@ -13,6 +13,7 @@
 #include "game.hpp"
 #include "utilities/utilites.hpp"
 #include "ui/playing_ui.hpp"
+#include "configuration.hpp"
 
 
 PlayingState::PlayingState() {
@@ -286,31 +287,44 @@ bool PlayingState::handleCollisions(GameContext& context) {
 
 void PlayingState::drawTilePattern(Color firstColour, Color secondColour, GameContext& context) {
     Color tileColour;
+    static int counter = 1;
+
+    auto renderTiles = [&](int i, int j){
+        DrawRectangle(
+            int(context.tiles[i][j].position.x),
+            int(context.tiles[i][j].position.y),
+
+            (context.squareSize / NUMBER_OF_TILES),
+            (context.squareSize / NUMBER_OF_TILES),
+
+            tileColour
+        );
+    };
+
+
     for(int i = 0; i < NUMBER_OF_TILES; i++){
-        for(int i2 = 0; i2 < NUMBER_OF_TILES; i2++){
+        for(int j = 0; j < NUMBER_OF_TILES; j++){
 
-            if (((i + 1) + (i2 + 1)) % 2 == 0) {
-                // Odd
-                tileColour =  Color(230, 225, 197, 255); 
+            if (Utilities::isEven(NUMBER_OF_TILES)) {
+                if (Utilities::isEven(counter + i)) {
+                    tileColour =  TILE_COLOUR_1; 
+                } else {
+                    tileColour = TILE_COLOUR_2;
+                } 
+
             } else {
-                // Even
-                tileColour = Color(212, 203, 146, 255);
+                if (Utilities::isEven(counter)) {
+                    tileColour =  TILE_COLOUR_1; 
+                } else {
+                    tileColour = TILE_COLOUR_2;
+                } 
             }
-            
-            DrawRectangle(
 
-                int(context.tiles[i][i2].position.x),
-                int(context.tiles[i][i2].position.y),
-
-                (context.squareSize / NUMBER_OF_TILES),
-                (context.squareSize / NUMBER_OF_TILES),
-
-                tileColour
-
-            );
-
+            renderTiles(i, j);
+            counter++;
         }
     }
+    counter = 1;
 }
 
 

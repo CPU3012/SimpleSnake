@@ -32,4 +32,6 @@ namespace Utilities {
     bool samePositionV(::Vector2 firstVector, ::Vector2 secondVector); // Raylib Vector2 for compatability
 
     bool samePosition(Utilities::Vector2<int> firstVector, Utilities::Vector2<int> secondVector);
+
+    bool isEven(int val);
 }
