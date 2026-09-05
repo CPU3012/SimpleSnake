@@ -11,4 +11,4 @@ class GameoverUI : public UI {
 
 #define GAMEOVER_TEXT "Game over"
 
-#define PLAYAGAIN_BUTTON_TEXT "Play again??"
+#define PLAYAGAIN_BUTTON_TEXT "Play again?"
